@@ -17,7 +17,8 @@ The usage then is as follows:
                       :example {:path 0}}))
 ;; this is common in Clojure and you might already have something like this.
 
-(def scoped-state (scope app-state [:example :path]))```
+(def scoped-state (scope app-state [:example :path]))
+```
 
 Now `scoped-state` is usable like any other atom but all actions that happen to it are scoped to its path.
 ```
