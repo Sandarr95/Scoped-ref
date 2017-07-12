@@ -9,7 +9,7 @@ This library only adds a protocol called `IAssociativeAtom` with a single functi
 ## Usage
 
 The usage then is as follows:
-```
+```clojure
 (ns my.awesome.project
   (:require [scoped-ref.atom :refer [scope]]))
 
@@ -21,7 +21,7 @@ The usage then is as follows:
 ```
 
 Now `scoped-state` is usable like any other atom but all actions that happen to it are scoped to its path.
-```
+```clojure
 (swap! scoped-state inc) ;; result=> 1
 
 @scoped-state ;; result=> 1
