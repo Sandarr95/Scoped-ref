@@ -45,7 +45,7 @@ Great now I can run my 10000 components all in 1 managed ref, and it's simple...
 
 Well, Originally I started this project where the idea was to make a new reference for every scope. So then you might be able to run everything from 1 state and still have a ton of parallelism.
 
-In this project though, you run it from 1 atom. This means you still get the concurrency benefits of atoms themselves. For example running all `swap` calls in different threads and not having to worry about anything going wrong. But when it comes time to `compareAndSet` and the actions are orthogonal (because their paths are subsets of one another) it will still retry.
+In this project though, you run it from 1 atom. This means you still get the concurrency benefits of atoms themselves. For example running all `swap` calls in different threads and not having to worry about anything going wrong. But when it comes time to `compareAndSet` and the actions are orthogonal (because their paths aren't subsets of one another) it will still retry.
 
 I am still thinking about how to implement behavior where those actions that are orthogonal never have to retry, but they are still in 1 managed ref and can be dereferenced to a value. Not sure if the gain in concurrency is really worth it though. Haven't looked into databases that much but I suspect they have a good way to handle these kinds of things and at that scale you're probably already using that.
 
