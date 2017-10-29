@@ -2,37 +2,43 @@
   (:require [clojure.test :refer :all]
             [scoped-ref.atom :refer [scope]]))
 
-(def test-atom (atom {:nest {:tree 0 :struct 0}}))
+(defn init-test-atom [] (atom {:nest {:tree 0 :struct 0}}))
 
-(def test-scope1 (scope test-atom [:nest :tree]))
-(def test-scope2 (scope test-atom [:nest :struct]))
+(defn init-test-scopes [a]
+  [(scope a [:nest :tree])
+   (scope a [:nest :struct])])
 
 (deftest scoping
-  (testing "Scope return value"
-    (is (= 0 @test-scope1)))
-  (testing "Scope record"
-    (is (= (:root test-scope1) test-atom))
-    (is (= (:path test-scope1) [:nest :tree]))))
+  (let [rat (init-test-atom)
+        [s1 s2] (init-test-scopes rat)]
+    (testing "Scope return value"
+      (is (= @s1 @s2 0)))
+    (testing "Scope record"
+      (is (= (:root s1) (:root s2) rat))
+      (is (= (:path s1) [:nest :tree]))
+      (is (= (:path s2) [:nest :struct])))))
 
 (deftest swapping
-  (testing "Scoped swapping"
-    (is (= (inc (get-in @test-atom [:nest :tree])) (swap! test-scope1 inc) (get-in @test-atom [:nest :tree])))
-    (is (= (swap! test-scope2 + 2) (get-in @test-atom [:nest :struct])))))
-
-(deftest scopes
-  (testing "Scopes still good"
-    (is (= @test-atom (assoc-in @test-atom (:path test-scope1) @test-scope1)))))
+  (let [rat (init-test-atom)
+        [s1 s2] (init-test-scopes rat)]
+    (testing "Scoped swapping"
+      (is (= (inc (get-in @rat [:nest :tree])) (swap! s1 inc) (get-in @rat [:nest :tree])))
+      (is (= (swap! s2 + 2) (get-in @rat [:nest :struct]))))))
 
 (deftest resetting
-  (testing "Reset scope"
-    (is (= (reset! test-scope1 0) 0 @test-scope1 (get-in @test-atom (:path test-scope1))))))
+  (let [rat (init-test-atom)
+        [s1 s2] (init-test-scopes rat)]
+    (testing "Reset scope"
+      (is (= (reset! s1 0) 0 @s1 (get-in @rat (:path s1)))))))
 
 (deftest watching
-  (testing "Add watch to scope, only see changes to scope"
-    (let [p (promise)]
-      (add-watch test-scope1 :test-watcher (fn [_ _ _ n] (deliver p n)))
-      (swap! test-scope2 inc)
+  (let [rat (init-test-atom)
+        [s1 s2] (init-test-scopes rat)
+        p (promise)]
+    (testing "Add watch to scope, only see changes to scope"
+      (add-watch s1 :test-watcher (fn [_ _ _ n] (deliver p n)))
+      (swap! s2 inc)
       (is (not (realized? p)))
-      (swap! test-scope1 inc)
+      (swap! s1 inc)
       (is (realized? p))
-      (is (= @p @test-scope1)))))
+      (is (= @p @s1)))))
